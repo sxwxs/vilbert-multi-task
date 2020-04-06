@@ -27,8 +27,6 @@ def assert_eq(real, expected):
 
 def _load_annotations(annotations_jsonpath, image_path):
     """Build an index out of FOIL annotations, mapping each image ID with its corresponding captions."""
-
-    annotations_json = json.load(open(annotations_jsonpath))
     file = open(annotations_jsonpath)
     
     # Build an index which maps image id with a list of caption annotations.
@@ -38,7 +36,7 @@ def _load_annotations(annotations_jsonpath, image_path):
         if os.path.exists(image_path + lineLS[0] + '.npy'):
             entries.append(
                 {
-                    "caption": lineLS[1].lowwer(),
+                    "caption": lineLS[1].lower(),
                     "foil": lineLS[-1],
                     "image_id": lineLS[0],
                 }
@@ -60,7 +58,7 @@ class MultimodalTwitterDataset(Dataset):
         padding_index=0,
         max_seq_length=20,
         max_region_num=101,
-        clean_datasets
+        clean_datasets=None
     ):
         # All the keys in `self._entries` would be present in `self._image_features_reader`
         self._image_features_reader = image_features_reader
@@ -151,7 +149,7 @@ class MultimodalTwitterDataset(Dataset):
         image_id = entry["image_id"]
         
         reader = np.load(self.image_path + image_id + '.npy', allow_pickle=True)
-        features, num_boxes, boxes, _ = reader.item().get("features"), reader.item().get("num_boxes"), reader.item().get("bbox")
+        features, num_boxes, boxes = reader.item().get("features"), reader.item().get("num_boxes"), reader.item().get("bbox")
         # self._image_features_reader[image_id]
 
         image_mask = [1] * (int(num_boxes))
@@ -177,7 +175,7 @@ class MultimodalTwitterDataset(Dataset):
             input_mask,
             segment_ids,
             co_attention_mask,
-            image_id,
+            int(image_id),
         )
 
     def __len__(self):
