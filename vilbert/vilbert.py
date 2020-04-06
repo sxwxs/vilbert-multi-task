@@ -1673,6 +1673,7 @@ class VILBertForVLTasks(BertPreTrainedModel):
         linguisic_prediction, vision_prediction, vil_binary_prediction = self.cls(
             sequence_output_t, sequence_output_v, pooled_output_t, pooled_output_v
         )
+        #print('shape1', vil_binary_prediction.shape, vil_binary_prediction)
 
         if self.fusion_method == "sum":
             pooled_output = self.dropout(pooled_output_t + pooled_output_v)
@@ -1683,10 +1684,12 @@ class VILBertForVLTasks(BertPreTrainedModel):
 
         vil_prediction = self.vil_prediction(pooled_output)
         vil_prediction_gqa = self.vil_prediction_gqa(pooled_output)
-        if pooled_output.size(0) % 2 == 0:
+        #print(pooled_output, pooled_output.shape)
+        if False and pooled_output.size(0) % 2 == 0:
             vil_binary_prediction = self.vil_binary_prediction(
                 pooled_output.view(-1, pooled_output.size(1) * 2)
             )
+        #print('shape2', vil_binary_prediction.shape, vil_binary_prediction)
         vil_logit = self.vil_logit(pooled_output)
         vil_tri_prediction = self.vil_tri_prediction(pooled_output)
         vision_logit = self.vision_logit(self.dropout(sequence_output_v)) + (

@@ -361,6 +361,7 @@ def ForwardModelsTrain(
         batch_score = float((preds == target).sum()) / float(batch_size)
 
     elif task_cfg[task_id]["type"] == "VL-binary-classifier":
+        #print(target.shape, vil_binary_prediction.shape)
         loss = task_losses[task_id](vil_binary_prediction, target)
         loss = loss.mean()
         batch_score = compute_score_with_logits(
@@ -624,8 +625,9 @@ def LoadDatasetEval(args, task_cfg, ids):
 def compute_score_with_logits(logits, labels):
     logits = torch.max(logits, 1)[1].data  # argmax
     one_hots = torch.zeros(*labels.size()).cuda()
-    one_hots.scatter_(1, logits.view(-1, 1), 1)
-    scores = one_hots * labels
+    #one_hots.scatter_(0, logits.view(-1, 1), 1)
+    #scores = one_hots * labels
+    scores = logits * labels
     return scores
 
 

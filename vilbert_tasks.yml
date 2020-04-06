@@ -344,7 +344,7 @@ TASK19:
   val_annotations_jsonpath: '/home/wxy/Data/sarcasm/text/test2.txt'
   max_seq_length: 40
   max_region_num: 101
-  batch_size: 32
+  batch_size: 16
   eval_batch_size: 512
   train_split: train
   val_split: dev
