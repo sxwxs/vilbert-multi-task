@@ -60,6 +60,7 @@ class MultimodalTwitterDataset(Dataset):
         padding_index=0,
         max_seq_length=20,
         max_region_num=101,
+        clean_datasets
     ):
         # All the keys in `self._entries` would be present in `self._image_features_reader`
         self._image_features_reader = image_features_reader
