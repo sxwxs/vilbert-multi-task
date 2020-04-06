@@ -38,7 +38,7 @@ def _load_annotations(annotations_jsonpath, image_path):
         if os.path.exists(image_path + lineLS[0] + '.npy'):
             entries.append(
                 {
-                    "caption": lineLS[1],
+                    "caption": lineLS[1].lowwer(),
                     "foil": lineLS[-1],
                     "image_id": lineLS[0],
                 }
