@@ -68,6 +68,7 @@ DatasetMapTrain = {
     "Visual7w": Visual7wPointingDataset,
     "GuessWhatPointing": GuessWhatPointingDataset,
     "FlickrGrounding": FlickrGroundingDataset,
+    "MultimodalTwitter": MultimodalTwitterDataset,
 }
 
 
