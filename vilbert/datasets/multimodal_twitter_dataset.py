@@ -43,6 +43,55 @@ def _load_annotations(annotations_jsonpath, image_path):
             )
     return entries
 
+def get_image_features(reader):
+    item = {}
+    item["image_id"] = reader.item().get("image_id")
+    item["image_h"] = reader.item().get("image_height")
+    item["image_w"] = reader.item().get("image_width")
+    item["num_boxes"] = reader.item().get("num_boxes")
+    item["boxes"] = reader.item().get("bbox")
+    item["features"] = reader.item().get("features")
+    image_h = int(item["image_h"])
+    image_w = int(item["image_w"])
+    # num_boxes = int(item['num_boxes'])
+
+    # features = np.frombuffer(base64.b64decode(item["features"]), dtype=np.float32).reshape(num_boxes, 2048)
+    # boxes = np.frombuffer(base64.b64decode(item['boxes']), dtype=np.float32).reshape(num_boxes, 4)
+    features = item["features"].reshape(-1, 2048)
+    boxes = item["boxes"].reshape(-1, 4)
+
+    num_boxes = features.shape[0]
+    g_feat = np.sum(features, axis=0) / num_boxes
+    num_boxes = num_boxes + 1
+    features = np.concatenate(
+        [np.expand_dims(g_feat, axis=0), features], axis=0
+    )
+
+    image_location = np.zeros((boxes.shape[0], 5), dtype=np.float32)
+    image_location[:, :4] = boxes
+    image_location[:, 4] = (
+        (image_location[:, 3] - image_location[:, 1])
+        * (image_location[:, 2] - image_location[:, 0])
+        / (float(image_w) * float(image_h))
+    )
+
+    image_location_ori = copy.deepcopy(image_location)
+    image_location[:, 0] = image_location[:, 0] / float(image_w)
+    image_location[:, 1] = image_location[:, 1] / float(image_h)
+    image_location[:, 2] = image_location[:, 2] / float(image_w)
+    image_location[:, 3] = image_location[:, 3] / float(image_h)
+
+    g_location = np.array([0, 0, 1, 1, 1])
+    image_location = np.concatenate(
+        [np.expand_dims(g_location, axis=0), image_location], axis=0
+    )
+
+    g_location_ori = np.array([0, 0, image_w, image_h, image_w * image_h])
+    image_location_ori = np.concatenate(
+        [np.expand_dims(g_location_ori, axis=0), image_location_ori], axis=0
+    )
+
+    return features, num_boxes, image_location, image_location_ori
 
 class MultimodalTwitterDataset(Dataset):
     def __init__(
@@ -144,12 +193,10 @@ class MultimodalTwitterDataset(Dataset):
             entry["segment_ids"] = segment_ids
 
     def __getitem__(self, index):
-
         entry = self._entries[index]
         image_id = entry["image_id"]
-        
         reader = np.load(self.image_path + image_id + '.npy', allow_pickle=True)
-        features, num_boxes, boxes = reader.item().get("features"), reader.item().get("num_boxes"), reader.item().get("bbox")
+        features, num_boxes, boxes, _ = get_image_features(reader)
         # self._image_features_reader[image_id]
 
         image_mask = [1] * (int(num_boxes))
